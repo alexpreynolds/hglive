@@ -1,0 +1,17 @@
+{
+    apps : [
+        {
+            name: "hglive-server",
+            script: "npm run dev",
+            interpreter: "none",
+            watch: false,
+	    cwd: "/home/ubuntu/git/hglive",
+            env: {
+                "DEBUG": "hglive:*",
+                "PORT": 3000,
+                "NODE_ENV": "development",
+                "HOST": "ec2-18-222-63-22.us-east-2.compute.amazonaws.com"
+            }
+        }
+    ]
+}
