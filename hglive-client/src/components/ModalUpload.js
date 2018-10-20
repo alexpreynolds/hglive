@@ -24,13 +24,9 @@ class ModalUpload extends Component {
       file: null
     };
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.uploadInput = React.createRef();
-    this.uploadForm = React.createRef();
   }
   
-  onSubmit = () => alert(JSON.stringify(this.uploadForm, null, 2))
-  onSubmitClick = () => this.formReference.submit()
-  onChange = (e) => this.setState({file:e.target.files[0]}, function() { console.log(this.state.file)})
+  onChange = (event) => this.setState({ file: event.target.files[0] });
   
   handleSubmit(event) {
     event.preventDefault();
@@ -40,8 +36,7 @@ class ModalUpload extends Component {
     const uploadRouteURL = `http://${appConstants.host}:${appConstants.port}/upload`;
     const config = {
       headers: {
-        'content-type': 'multipart/form-data',
-        'Access-Control-Allow-Origin': '*'
+        'content-type': 'multipart/form-data'
       }
     }
     self.setState({
