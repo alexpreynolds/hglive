@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
 import {
   Collapse,
+  Nav,
+  NavItem,
   Navbar,
   NavbarBrand,
   Button } from 'reactstrap';
 import { 
   MdChevronLeft, 
   MdChevronRight, 
-  MdFileUpload } from 'react-icons/md';
+  MdFileUpload,
+  MdSettings } from 'react-icons/md';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import * as appConstants from './Constants';
@@ -22,6 +25,7 @@ class App extends Component {
       modalUpload: false
     };
     this.toggleUpload = this.toggleUpload.bind(this);
+    this.parseQueryParameters = this.parseQueryParameters.bind(this);
   }
   
   toggleUpload() {
@@ -31,15 +35,15 @@ class App extends Component {
     });
   }
   
-  componentDidMount() {
+  parseQueryParameters() {
     function getJsonFromUrl() {
-        var query = window.location.search.substr(1);
-        var result = {};
-        query.split("&").forEach(function(part) {
-            var item = part.split("=");
-            result[item[0]] = decodeURIComponent(item[1]);
-        });
-        return result;
+      var query = window.location.search.substr(1);
+      var result = {};
+      query.split("&").forEach(function(part) {
+          var item = part.split("=");
+          result[item[0]] = decodeURIComponent(item[1]);
+      });
+      return result;
     }
     var obj = getJsonFromUrl();
     if (obj && obj.id && obj.id.length > 0) {
@@ -51,6 +55,10 @@ class App extends Component {
         const completionStateRouteURL = `http://${appConstants.host}:${appConstants.port}/id/${self.state.id}`;
       });
     }
+  }
+  
+  componentDidMount() {
+    this.parseQueryParameters();    
   }
   
   render() {
@@ -100,17 +108,27 @@ class App extends Component {
           {(this.state.mode === appConstants.modes.upload) &&  
             (
               <Collapse isOpen={true} navbar>
-                <Button 
-                  color="primary" 
-                  className="ml-auto mr-0" 
-                  onClick={this.toggleUpload} >
-                  <MdFileUpload size={32} color="white" />Upload BED3+
-                </Button>
-                <ModalUpload 
-                  title="Upload BED3+"
-                  body="Upload a three- or more column BED file. Any data in the fourth column will be used to title the genomic position."
-                  modal={this.state.modalUpload} 
-                  toggle={this.toggleUpload} />
+                <Nav className="ml-auto" navbar>
+                  <NavItem>
+                    <Button 
+                      color="primary"
+                      style={{marginRight:"8px"}}
+                      onClick={this.toggleUpload} >
+                      <MdFileUpload size={32} color="white" />Upload BED3+
+                    </Button>
+                    <Button color="secondary" disabled>
+                      <MdSettings 
+                        size={32} 
+                        color="white" />
+                    </Button> 
+                    <ModalUpload 
+                      title="Upload BED3+"
+                      body="Upload a three- or more column BED file. Any data in the fourth column will be used to title the genomic position."
+                      modal={this.state.modalUpload} 
+                      toggle={this.toggleUpload}
+                      refresh={this.parseQueryParameters} />
+                  </NavItem>
+                </Nav>
               </Collapse>
             )
           }

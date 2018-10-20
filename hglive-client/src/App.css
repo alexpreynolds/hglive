@@ -29,10 +29,19 @@
 .interval-header-content {
   text-align: left;
   line-height: 1em;
-  margin-left: 88px;
+  margin-left: calc(80px - 4px);
 }
 
 .interval-header-content-subheader {
   font-size: 0.8em;
   font-weight: normal;
+}
+
+.settings {
+  margin-right: 10px !important;
+}
+
+.navbar {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }

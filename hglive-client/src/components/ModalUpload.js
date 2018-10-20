@@ -47,16 +47,22 @@ class ModalUpload extends Component {
         .then(function(res) {
           var id = res.data.id;
           var destURL = `http://${appConstants.host}?id=${id}`;
-          window.location.replace(destURL);
+          var stateObj = { id: id };
+          window.history.pushState(stateObj, `hgLive - ${id}`, destURL);
         })
         .catch(function(error) {
           console.log("error", error);
         })
         .finally(function() {
-          self.setState({
-            submit: "Submit",
-            formEnabled: true
-          });
+          setTimeout(function() {
+            self.setState({
+              submit: "Submit",
+              formEnabled: true
+            }, function() {
+              this.props.toggle();
+              this.props.refresh();
+            });
+          }, 2000);
         });
     })
   }
