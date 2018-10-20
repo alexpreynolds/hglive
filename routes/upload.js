@@ -28,22 +28,10 @@ router.post('/', cors(), function(req, res) {
     return res.status(400).send('No files were uploaded.');
   }
     
-  // The name of the input field (i.e. "coordsFn") is used to retrieve the uploaded file
-  let coordsFn = req.files.coordsFn;
-  
+  let coordsFn = req.files.coordsFn;  
   if (!coordsFn) {
     coordsFn = req.files.file;
   }
-
-/*
-  if (!coordsFn) {
-    console.log('Coordinates unspecified or other error');
-    console.log(coordsFn);
-    console.log('--');
-    console.log(req.files);
-    res.status(302).redirect('/');
-  }
-*/
 
   // Set up destination filename and folder, if necessary
   var id = uuidv4();
@@ -81,8 +69,6 @@ router.post('/', cors(), function(req, res) {
 	.finally(function() {
     // Redirect client 
     console.log('redirecting...');
-    //res.status(301).redirect('http://' + (process.env.HOST || constants.HOST) + ':80/?id=' + id);
-    //res.status(200).redirect('http://www.google.com');
     res.setHeader('Content-Type', 'application/json');
     res.send(JSON.stringify({ id: id }));
 	});
