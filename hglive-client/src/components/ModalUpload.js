@@ -33,7 +33,6 @@ class ModalUpload extends Component {
     var self = this;
     var formData = new FormData();
     formData.append('file', this.state.file);
-    const uploadRouteURL = `http://${appConstants.host}:${appConstants.port}/upload`;
     const config = {
       headers: {
         'content-type': 'multipart/form-data'
@@ -43,9 +42,12 @@ class ModalUpload extends Component {
       submit: <Spinner />,
       formEnabled: false
     }, function() {
+      var coords = [];
+      const uploadRouteURL = `http://${appConstants.host}:${appConstants.port}/upload`;
       axios.post(uploadRouteURL, formData, config)
         .then(function(res) {
           var id = res.data.id;
+          coords = res.data.coords;
           var destURL = `http://${appConstants.host}?id=${id}`;
           var stateObj = { id: id };
           window.history.pushState(stateObj, `hgLive - ${id}`, destURL);
@@ -59,6 +61,7 @@ class ModalUpload extends Component {
               submit: "Submit",
               formEnabled: true
             }, function() {
+              this.props.updateCoords(coords);
               this.props.toggle();
               this.props.refresh();
             });
@@ -68,7 +71,6 @@ class ModalUpload extends Component {
   }
 
   render() {
-    const uploadRouteURL = `http://${appConstants.host}:${appConstants.port}/upload`;
     return (
       <div>
         <Modal isOpen={this.props.modal} toggle={this.props.toggle} className={this.props.className}>

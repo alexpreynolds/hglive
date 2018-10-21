@@ -1,4 +1,8 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
+import Spinner from 'react-svg-spinner';
+import axios from 'axios';
+import ArrowKeysReact from 'arrow-keys-react';
 import {
   Collapse,
   Nav,
@@ -21,11 +25,47 @@ class App extends Component {
     super(props);
     this.state = {
       id: "",
+      coords: [],
+      currentCoordIdx: 0,
       mode: appConstants.modes.upload,
       modalUpload: false
     };
+    this.updateCoords = this.updateCoords.bind(this);
     this.toggleUpload = this.toggleUpload.bind(this);
     this.parseQueryParameters = this.parseQueryParameters.bind(this);
+    this.focusDiv = this.focusDiv.bind(this);
+    this.mod = this.mod.bind(this);
+    this.incrementCoordIdx = this.incrementCoordIdx.bind(this);
+    this.decrementCoordIdx = this.decrementCoordIdx.bind(this);
+    ArrowKeysReact.config({
+      left: () =>  { this.decrementCoordIdx() },
+      right: () => { this.incrementCoordIdx() },
+      up: () =>    { this.decrementCoordIdx() },
+      down: () =>  { this.incrementCoordIdx() }
+    });
+  }
+  
+  mod(n, p) {
+    return n - p * Math.floor(n / p);
+  }
+  
+  incrementCoordIdx() {
+    this.setState({ 
+      currentCoordIdx: this.mod((this.state.currentCoordIdx + 1), this.state.coords.length) 
+    });
+  }
+  
+  decrementCoordIdx() {
+    this.setState({ 
+      currentCoordIdx: this.mod((this.state.currentCoordIdx - 1), this.state.coords.length) 
+    });
+  }
+  
+  updateCoords(coords) {
+    this.setState({
+      coords: coords,
+      currentCoordIdx: 0
+    });
   }
   
   toggleUpload() {
@@ -52,29 +92,67 @@ class App extends Component {
         mode: appConstants.modes.view
       }, function() {
         var self = this;
-        const completionStateRouteURL = `http://${appConstants.host}:${appConstants.port}/id/${self.state.id}`;
+        const coordinatesRouteURL = `http://${appConstants.host}:${appConstants.port}/coordinates/${self.state.id}`;
+        axios.get(coordinatesRouteURL)
+          .then(function(res) {
+            self.updateCoords(res.data.coords);
+          })
+          .catch(function(error) {
+            console.log("error", error);
+            var destURL = `http://${appConstants.host}/`;
+            self.updateCoords(null);
+            window.location.replace(destURL);
+          });
       });
     }
   }
   
   componentDidMount() {
-    this.parseQueryParameters();    
+    this.parseQueryParameters();
+    this.focusDiv();
+  }
+  
+  componentDidUpdate() {
+    this.focusDiv();
+  }
+  
+  focusDiv() {
+    ReactDOM.findDOMNode(this.refs.hglive).focus();
   }
   
   render() {
+    var coord = (this.state.coords) ? this.state.coords[this.state.currentCoordIdx] : null;
     return (
-      <div>
+      <div ref="hglive" {...ArrowKeysReact.events} tabIndex="1" id="hglive">
         <Navbar color="dark" dark expand="md">
         
           <NavbarBrand>    
-            {(this.state.mode === appConstants.modes.view) &&  
+            {((this.state.mode === appConstants.modes.view) && (coord) && (coord.id.length > 0)) &&
               (
                 <div className='interval-header'>
                   <div className='interval-header-content'>
-                    interval001<br />
+                    {coord.id.replace(/_/g, ' ')}<br />
                     <div className='interval-header-content-subheader'>
-                      chrZ:1234-4567
+                      {coord.chr + ':' + coord.start + '-' + coord.stop}
                     </div>
+                  </div>
+                </div>
+              )
+            }
+            {((this.state.mode === appConstants.modes.view) && (coord) && (coord.id.length === 0)) &&
+              (
+                <div className='interval-header'>
+                  <div className='interval-header-content-no-subheader'>
+                    {coord.chr + ':' + coord.start + '-' + coord.stop}
+                  </div>
+                </div>
+              )
+            }
+            {((this.state.mode === appConstants.modes.view) && (!coord)) &&
+              (
+                <div className='interval-header'>
+                  <div className='interval-header-content'>
+                    <Spinner color="white" />
                   </div>
                 </div>
               )
@@ -91,14 +169,14 @@ class App extends Component {
           {(this.state.mode === appConstants.modes.view) &&  
             (
               <Collapse isOpen={true} navbar>
-                <Button color="secondary" className="ml-0" disabled>
+                <Button size="sm" color="primary" className="ml-0" disabled={(!coord)} onClick={this.decrementCoordIdx}>
                   <MdChevronLeft 
-                    size={32} 
+                    size={16} 
                     color="white" />
                 </Button>
-                <Button color="secondary" className="ml-auto mr-0" disabled>
+                <Button size="sm" color="primary" className="ml-auto mr-0" disabled={(!coord)} onClick={this.incrementCoordIdx}>
                   <MdChevronRight
-                    size={32} 
+                    size={16} 
                     color="white" />
                 </Button>
               </Collapse>
@@ -111,20 +189,25 @@ class App extends Component {
                 <Nav className="ml-auto" navbar>
                   <NavItem>
                     <Button 
+                      size="sm"
                       color="primary"
                       style={{marginRight:"8px"}}
                       onClick={this.toggleUpload} >
-                      <MdFileUpload size={32} color="white" />Upload BED3+
+                      <MdFileUpload size={16} color="white" />Upload BED3+
                     </Button>
-                    <Button color="secondary" disabled>
+                    <Button 
+                      size="sm" 
+                      color="secondary" 
+                      disabled>
                       <MdSettings 
-                        size={32} 
+                        size={16} 
                         color="white" />
                     </Button> 
                     <ModalUpload 
-                      title="Upload BED3+"
-                      body="Upload a three- or more column BED file. Any data in the fourth column will be used to title the genomic position."
+                      title="Upload"
+                      body="Upload a three- or more column BED file (BED3+). Any data in the fourth column will be used to title the genomic position."
                       modal={this.state.modalUpload} 
+                      updateCoords={this.updateCoords}
                       toggle={this.toggleUpload}
                       refresh={this.parseQueryParameters} />
                   </NavItem>
