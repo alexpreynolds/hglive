@@ -28,9 +28,9 @@ router.post('/', function(req, res) {
     return res.status(400).send('No files were uploaded.');
   }
     
-  let coordsFn = req.files.coordsFn;  
-  if (!coordsFn) {
-    coordsFn = req.files.file;
+  let coordsFile = req.files.coordsFn;  
+  if (!coordsFile) {
+    coordsFile = req.files.file;
   }
 
   // Set up destination filename and folder, if necessary
@@ -45,7 +45,7 @@ router.post('/', function(req, res) {
 
   // Use the mv() method to place the file on the server
   var destCoordsBedFn = path.join(destDir, 'coordinates.bed');
-  var writeBedCoordinatesPromise = coordsFn.mv(destCoordsBedFn)
+  var writeBedCoordinatesPromise = coordsFile.mv(destCoordsBedFn)
     .then(function() {
       return "[" + id + "] wrote BED coordinates";
     })
@@ -56,6 +56,7 @@ router.post('/', function(req, res) {
     
   // Convert BED to JSON object
   var coords = [];
+  var coordsObj = {};
   var fsReadFilePromisified = util.promisify(fs.readFile);
   var convertBedToJSONAndWriteJSONPromise = fsReadFilePromisified(destCoordsBedFn, {encoding: 'utf8'})
     .then(function(data) {
@@ -77,7 +78,13 @@ router.post('/', function(req, res) {
         }
       });
       var destCoordsJsonFn = path.join(destDir, 'coordinates.json');
-      fs.writeFileSync(destCoordsJsonFn, JSON.stringify({coords: coords}, null, 2));
+      coordsObj.id = id;
+      coordsObj.coords = coords;
+      coordsObj.paddingMidpoint = parseInt(req.body.paddingMidpoint) || 0;
+      coordsObj.build = req.body.build || null;
+      coordsObj.hgViewconfEndpointURL = req.body.hgViewconfEndpointURL || null;
+      coordsObj.hgViewconfId = req.body.hgViewconfId || null;
+      fs.writeFileSync(destCoordsJsonFn, JSON.stringify(coordsObj, null, 2));
       return "[" + id + "] converted BED to JSON";
     })
     .catch(function(err) {
@@ -98,7 +105,7 @@ router.post('/', function(req, res) {
       // Redirect client 
       console.log('redirecting...');
       res.setHeader('Content-Type', 'application/json');
-      res.send(JSON.stringify({ id: id, coords: coords }));
+      res.send(JSON.stringify(coordsObj));
     });
 });
 

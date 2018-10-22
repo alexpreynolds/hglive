@@ -7,15 +7,11 @@
 }
 
 #hglive-content {
-  margin-top: 12px;
-  margin-left: 12px;
-  margin-right: 12px;
-  height: calc(100vh - 70px);
-  width: calc(100vw - 25px);
-  border:1px dotted black;
+  height: calc(100vh - 91px);
+  width: calc(100vw);
 }
 
-.modal-content {
+.modal-content, .modal-title {
   font-family: ".SFNSDisplay-Regular", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Helvetica", "Calibri", sans-serif !important;
 }
 
@@ -70,9 +66,23 @@
 .navbar {
   padding-left: 8px !important;
   padding-right: 8px !important;
+}
+
+.navbar-top {
   -webkit-box-shadow: 0 4px 4px 0px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: 0 4px 4px 0px rgba(0, 0, 0, 0.2);
   box-shadow: 0 4px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-bottom {
+  -webkit-box-shadow: 0 -4px 4px 0px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 -4px 4px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -4px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+.exportDropdownToggle {
+  font-weight: bold;
+  color: white !important;
 }
 
 a:focus, 

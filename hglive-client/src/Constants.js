@@ -8,13 +8,24 @@ export const modes = {
 }
 Object.freeze(modes);
 
+export const buildURLs = {
+  'hg19' : 'http://s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv',
+  'hg38' : 'https://raw.githubusercontent.com/igvteam/igv/master/genomes/sizes/hg38.chrom.sizes'
+}
+Object.freeze(buildURLs);
+
 export const hgViewAnimationTime = 1500;
 
 export const hgViewDefaultParams = {
-  "build" : "hg19",
-  "padding" : 50000
+  "build" : "hg38",
+  "paddingMidpoint" : 100000,
+  "hgViewconfEndpointURL" : "http://explorer.altius.org/",
+  "hgViewconfId" : "d3w-zdJbRgKQDyNMcpclfA"
 }
 
+export const hgViewconfEndpointURLSuffix = "api/v1/viewconfs/?d=";
+
+export const testViewconfEndpointURL = "http://higlass.io/api/v1/viewconfs/?d=UUSPn8uSSEuIpHZFCOBRgA";
 export const testViewConfig =
 {
   "editable": true,
