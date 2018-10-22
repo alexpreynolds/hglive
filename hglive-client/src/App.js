@@ -19,6 +19,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import * as appConstants from './Constants';
 import ModalUpload from './components/ModalUpload';
+import 'higlass/dist/hglib.css';
+import { HiGlassComponent, ChromosomeInfo } from 'higlass';
 
 class App extends Component {
   constructor(props) {
@@ -28,7 +30,9 @@ class App extends Component {
       coords: [],
       currentCoordIdx: 0,
       mode: appConstants.modes.upload,
-      modalUpload: false
+      modalUpload: false,
+      hgViewParams: appConstants.hgViewDefaultParams,
+      hgViewKey: 0
     };
     this.updateCoords = this.updateCoords.bind(this);
     this.toggleUpload = this.toggleUpload.bind(this);
@@ -43,6 +47,10 @@ class App extends Component {
       up: () =>    { this.decrementCoordIdx() },
       down: () =>  { this.incrementCoordIdx() }
     });
+    this.hgView = React.createRef();
+    this.updateHgViewPosition = this.updateHgViewPosition.bind(this);
+    this.chromSizesURLForBuild = this.chromSizesURLForBuild.bind(this);
+    this.updateHgViewPositionToCurrentCoord = this.updateHgViewPositionToCurrentCoord.bind(this);
   }
   
   mod(n, p) {
@@ -52,19 +60,16 @@ class App extends Component {
   incrementCoordIdx() {
     this.setState({ 
       currentCoordIdx: this.mod((this.state.currentCoordIdx + 1), this.state.coords.length) 
+    }, function() {
+      this.updateHgViewPositionToCurrentCoord();
     });
   }
   
   decrementCoordIdx() {
     this.setState({ 
       currentCoordIdx: this.mod((this.state.currentCoordIdx - 1), this.state.coords.length) 
-    });
-  }
-  
-  updateCoords(coords) {
-    this.setState({
-      coords: coords,
-      currentCoordIdx: 0
+    }, function() {
+      this.updateHgViewPositionToCurrentCoord();
     });
   }
   
@@ -109,7 +114,51 @@ class App extends Component {
   
   componentDidMount() {
     this.parseQueryParameters();
-    this.focusDiv();
+    //this.focusDiv();
+  }
+  
+  chromSizesURLForBuild(build) {
+    const urls = {
+      'hg19' : 'http://s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv',
+      'hg38' : 'https://raw.githubusercontent.com/igvteam/igv/master/genomes/sizes/hg38.chrom.sizes'
+    }
+    return urls[build];
+  }
+  
+  updateCoords(coords) {
+    this.setState({
+      coords: coords,
+      currentCoordIdx: 0
+    }, function() {
+      this.updateHgViewPositionToCurrentCoord();
+    });
+  }
+  
+  updateHgViewPositionToCurrentCoord() {
+    var coord = (this.state.coords) ? this.state.coords[this.state.currentCoordIdx] : null;
+    this.updateHgViewPosition(this.state.hgViewParams.build, coord.chr, coord.start, coord.stop, coord.chr, coord.start, coord.stop);
+  }
+  
+  updateHgViewPosition(build, chrA, startA, stopA, chrB, startB, stopB) {
+    var self = this;
+    self.setState({
+      hgViewKey : self.state.hgViewKey + 1
+    }, function() {
+      ChromosomeInfo(self.chromSizesURLForBuild(build))
+        .then((chromInfo) => {
+          setTimeout(function() {
+            self.hgView.zoomTo(
+              appConstants.testViewConfig.views[0].uid,
+              chromInfo.chrToAbs([chrA, parseInt(startA - self.state.hgViewParams.padding)]),
+              chromInfo.chrToAbs([chrA, parseInt(stopA  + self.state.hgViewParams.padding)]),
+              chromInfo.chrToAbs([chrB, parseInt(startB - self.state.hgViewParams.padding)]),
+              chromInfo.chrToAbs([chrB, parseInt(stopB  + self.state.hgViewParams.padding)]),
+              appConstants.hgViewAnimationTime
+            );
+          }, 1000);
+        })
+        .catch(err => console.error('Oh boy...', err));
+    });
   }
   
   componentDidUpdate() {
@@ -123,7 +172,7 @@ class App extends Component {
   render() {
     var coord = (this.state.coords) ? this.state.coords[this.state.currentCoordIdx] : null;
     return (
-      <div ref="hglive" {...ArrowKeysReact.events} tabIndex="1" id="hglive">
+      <div ref="hglive" {...ArrowKeysReact.events} tabIndex="1" id="hglive-nav">
         <Navbar color="dark" dark expand="md">
         
           <NavbarBrand>    
@@ -217,6 +266,14 @@ class App extends Component {
           }
           
         </Navbar>
+        <div id="hglive-content">
+          <HiGlassComponent
+            key={this.state.hgViewKey}
+            ref={(component) => this.hgView = component}
+            options={{ bounded: true }}
+            viewConfig={appConstants.testViewConfig}
+            />
+        </div>
       </div>
     );
   }

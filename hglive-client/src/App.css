@@ -2,8 +2,17 @@
   font-family: ".SFNSDisplay-Regular", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Helvetica", "Calibri", sans-serif !important;
 }
 
-#hglive:focus {
+#hglive-nav:focus {
   outline: none !important;
+}
+
+#hglive-content {
+  margin-top: 12px;
+  margin-left: 12px;
+  margin-right: 12px;
+  height: calc(100vh - 70px);
+  width: calc(100vw - 25px);
+  border:1px dotted black;
 }
 
 .btn-left {

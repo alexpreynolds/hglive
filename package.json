@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "PORT=3000 HOST=ec2-18-222-63-22.us-east-2.compute.amazonaws.com node ./bin/www"
+    "dev": "PORT=3000 HOST=ec2-18-217-14-21.us-east-2.compute.amazonaws.com node ./bin/www"
   },
   "dependencies": {
     "cookie-parser": "~1.4.3",

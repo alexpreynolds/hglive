@@ -10,7 +10,7 @@
                 "DEBUG": "hglive:*",
                 "PORT": 3000,
                 "NODE_ENV": "development",
-                "HOST": "ec2-18-222-63-22.us-east-2.compute.amazonaws.com"
+                "HOST": "ec2-18-217-14-21.us-east-2.compute.amazonaws.com"
             }
         }
     ]
