@@ -8,7 +8,7 @@ export const modes = {
 }
 Object.freeze(modes);
 
-export const hgViewAnimationTime = 2500;
+export const hgViewAnimationTime = 1500;
 
 export const hgViewDefaultParams = {
   "build" : "hg19",

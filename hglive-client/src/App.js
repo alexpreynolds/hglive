@@ -37,7 +37,7 @@ class App extends Component {
     this.updateCoords = this.updateCoords.bind(this);
     this.toggleUpload = this.toggleUpload.bind(this);
     this.parseQueryParameters = this.parseQueryParameters.bind(this);
-    this.focusDiv = this.focusDiv.bind(this);
+    this.focusNavbar = this.focusNavbar.bind(this);
     this.mod = this.mod.bind(this);
     this.incrementCoordIdx = this.incrementCoordIdx.bind(this);
     this.decrementCoordIdx = this.decrementCoordIdx.bind(this);
@@ -114,7 +114,7 @@ class App extends Component {
   
   componentDidMount() {
     this.parseQueryParameters();
-    //this.focusDiv();
+    this.focusNavbar();
   }
   
   chromSizesURLForBuild(build) {
@@ -141,31 +141,28 @@ class App extends Component {
   
   updateHgViewPosition(build, chrA, startA, stopA, chrB, startB, stopB) {
     var self = this;
-    self.setState({
-      hgViewKey : self.state.hgViewKey + 1
-    }, function() {
-      ChromosomeInfo(self.chromSizesURLForBuild(build))
-        .then((chromInfo) => {
-          setTimeout(function() {
-            self.hgView.zoomTo(
-              appConstants.testViewConfig.views[0].uid,
-              chromInfo.chrToAbs([chrA, parseInt(startA - self.state.hgViewParams.padding)]),
-              chromInfo.chrToAbs([chrA, parseInt(stopA  + self.state.hgViewParams.padding)]),
-              chromInfo.chrToAbs([chrB, parseInt(startB - self.state.hgViewParams.padding)]),
-              chromInfo.chrToAbs([chrB, parseInt(stopB  + self.state.hgViewParams.padding)]),
-              appConstants.hgViewAnimationTime
-            );
-          }, 1000);
-        })
-        .catch(err => console.error('Oh boy...', err));
-    });
+    ChromosomeInfo(self.chromSizesURLForBuild(build))
+      .then((chromInfo) => {
+        setTimeout(function() {
+          self.hgView.zoomTo(
+            appConstants.testViewConfig.views[0].uid,
+            chromInfo.chrToAbs([chrA, parseInt(startA - self.state.hgViewParams.padding)]),
+            chromInfo.chrToAbs([chrA, parseInt(stopA  + self.state.hgViewParams.padding)]),
+            chromInfo.chrToAbs([chrB, parseInt(startB - self.state.hgViewParams.padding)]),
+            chromInfo.chrToAbs([chrB, parseInt(stopB  + self.state.hgViewParams.padding)]),
+            appConstants.hgViewAnimationTime
+          );
+          self.focusNavbar();
+        }, 1000);
+      })
+      .catch(err => console.error('Oh boy...', err));
   }
   
   componentDidUpdate() {
-    this.focusDiv();
+    this.focusNavbar();
   }
   
-  focusDiv() {
+  focusNavbar() {
     ReactDOM.findDOMNode(this.refs.hglive).focus();
   }
   
