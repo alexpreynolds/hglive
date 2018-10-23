@@ -8,7 +8,7 @@
     "bootstrap": "^4.1.3",
     "file-saver": "^2.0.0-rc.4",
     "higlass": "^1.2.8",
-    "higlass-multivec": "^0.2.0-alpha.5",
+    "higlass-multivec": "^0.2.0-alpha.7",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
     "react-icons": "^3.2.1",

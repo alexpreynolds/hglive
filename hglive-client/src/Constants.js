@@ -20,7 +20,7 @@ export const hgViewDefaultParams = {
   "build" : "hg38",
   "paddingMidpoint" : 100000,
   "hgViewconfEndpointURL" : "http://explorer.altius.org/",
-  "hgViewconfId" : "d3w-zdJbRgKQDyNMcpclfA"
+  "hgViewconfId" : "OGE3pd95StKbn3yOkXUkCw"
 }
 
 export const hgViewconfEndpointURLSuffix = "api/v1/viewconfs/?d=";

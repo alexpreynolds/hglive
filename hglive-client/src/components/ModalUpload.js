@@ -87,6 +87,7 @@ class ModalUpload extends Component {
               this.props.updateCoords(coords);
               this.toggle();
               this.props.refresh();
+              this.props.refreshHgView(this.state.hgViewconfId);
             });
           }, 2000);
         });

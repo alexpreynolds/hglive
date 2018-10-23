@@ -24,7 +24,7 @@ import * as appConstants from './Constants';
 import ModalUpload from './components/ModalUpload';
 import 'higlass/dist/hglib.css';
 import { HiGlassComponent, ChromosomeInfo } from 'higlass';
-import 'higlass-multivec/dist/higlass-multivec.min.js';
+import 'higlass-multivec/dist/higlass-multivec.js';
 import saveAs from 'file-saver';
 
 class App extends Component {
@@ -63,22 +63,22 @@ class App extends Component {
     this.hgViewconfDownloadURL = this.hgViewconfDownloadURL.bind(this);
     this.exportDropdownToggle = this.exportDropdownToggle.bind(this);
     this.exportDropdownItemSelect = this.exportDropdownItemSelect.bind(this);
+    this.refreshHgView = this.refreshHgView.bind(this);
     
     // update viewconf from server endpoint
-    var self = this;
-    axios.get(this.hgViewconfDownloadURL())
-      .then(function(res) {
-        self.setState({
+    axios.get(this.hgViewconfDownloadURL(this.state.hgViewParams.hgViewconfId))
+      .then((res) => {
+        this.setState({
           viewconf: res.data
         });
       })
-      .catch(function(err) {
+      .catch((err) => {
         console.log("error", err);
       });
   }
   
-  hgViewconfDownloadURL() {
-    return this.state.hgViewParams.hgViewconfEndpointURL + appConstants.hgViewconfEndpointURLSuffix + this.state.hgViewParams.hgViewconfId;
+  hgViewconfDownloadURL(id) {
+    return this.state.hgViewParams.hgViewconfEndpointURL + appConstants.hgViewconfEndpointURLSuffix + id;
   }
   
   hgViewconfIsNotEmpty() {
@@ -114,6 +114,19 @@ class App extends Component {
     });
   }
   
+  refreshHgView(id) {
+    axios.get(this.hgViewconfDownloadURL(id))
+      .then((res) => {
+        this.setState({
+          hgViewKey: this.state.hgViewKey + 1,
+          viewconf: res.data
+        });
+      })
+      .catch((err) => {
+        console.log("error", err);
+      });
+  }
+  
   parseQueryParameters() {
     function getJsonFromUrl() {
       var query = window.location.search.substr(1);
@@ -134,23 +147,26 @@ class App extends Component {
         id: obj.id,
         currentCoordIdx: currentCoordIdx,
         mode: appConstants.modes.view
-      }, function() {
-        var self = this;
-        const coordinatesRouteURL = `http://${appConstants.host}:${appConstants.port}/coordinates/${self.state.id}`;
+      }, () => {
+        const coordinatesRouteURL = `http://${appConstants.host}:${appConstants.port}/coordinates/${this.state.id}`;
         axios.get(coordinatesRouteURL)
-          .then(function(res) {
-            self.updateCoords(res.data.coords);
-            self.updateParams({
+          .then((res) => {
+            if (res.data.hgViewconfId !== this.state.hgViewParams.hgViewconfId) {
+              this.refreshHgView(res.data.hgViewconfId);
+            }
+            this.updateParams({
               paddingMidpoint: res.data.paddingMidpoint,
               build: res.data.build,
               hgViewconfEndpointURL: res.data.hgViewconfEndpointURL,
               hgViewconfId: res.data.hgViewconfId
-            })
+            });
+            this.updateCoords(res.data.coords);
+            console.log("self.state.hgViewParams.hgViewconfId",this.state.hgViewParams.hgViewconfId);
           })
-          .catch(function(err) {
+          .catch((err) => {
             console.log("error", err);
             var destURL = `http://${appConstants.host}/`;
-            self.updateCoords(null);
+            //this.updateCoords(null);
             window.location.replace(destURL);
           });
       });
@@ -183,13 +199,12 @@ class App extends Component {
   }
   
   updateHgViewPosition(build, chrA, startA, stopA, chrB, startB, stopB) {
-    var self = this;
     ChromosomeInfo(appConstants.buildURLs[build])
       .then((chromInfo) => {
-        setTimeout(function() {
-          if (self.state.hgViewParams.paddingMidpoint === 0) {
-            self.hgView.zoomTo(
-              self.state.viewconf.views[0].uid,
+        setTimeout(() => {
+          if (this.state.hgViewParams.paddingMidpoint === 0) {
+            this.hgView.zoomTo(
+              this.state.viewconf.views[0].uid,
               chromInfo.chrToAbs([chrA, startA]),
               chromInfo.chrToAbs([chrA, stopA]),
               chromInfo.chrToAbs([chrB, startB]),
@@ -200,27 +215,29 @@ class App extends Component {
           else {
             var midpointA = startA + parseInt((stopA - startA)/2);
             var midpointB = startB + parseInt((stopB - startB)/2);
-            self.hgView.zoomTo(
-              self.state.viewconf.views[0].uid,
-              chromInfo.chrToAbs([chrA, parseInt(midpointA - self.state.hgViewParams.paddingMidpoint)]),
-              chromInfo.chrToAbs([chrA, parseInt(midpointA + self.state.hgViewParams.paddingMidpoint)]),
-              chromInfo.chrToAbs([chrB, parseInt(midpointB - self.state.hgViewParams.paddingMidpoint)]),
-              chromInfo.chrToAbs([chrB, parseInt(midpointB + self.state.hgViewParams.paddingMidpoint)]),
+            this.hgView.zoomTo(
+              this.state.viewconf.views[0].uid,
+              chromInfo.chrToAbs([chrA, parseInt(midpointA - this.state.hgViewParams.paddingMidpoint)]),
+              chromInfo.chrToAbs([chrA, parseInt(midpointA + this.state.hgViewParams.paddingMidpoint)]),
+              chromInfo.chrToAbs([chrB, parseInt(midpointB - this.state.hgViewParams.paddingMidpoint)]),
+              chromInfo.chrToAbs([chrB, parseInt(midpointB + this.state.hgViewParams.paddingMidpoint)]),
               appConstants.hgViewAnimationTime
             );
           }          
-          self.focusNavbar();
+          this.focusNavbar();
         }, 1000);
       })
-      .catch(err => console.error('Oh boy...', err));
+      .catch((err) => console.error('Oh boy...', err));
   }
   
   componentDidMount() {
+    console.log("componentDidMount()");
     this.parseQueryParameters();
     this.focusNavbar();
   }
   
   componentDidUpdate() {
+    console.log("componentDidUpdate()");
     this.focusNavbar();
   }
   
@@ -383,6 +400,17 @@ class App extends Component {
         <Navbar color="dark" dark expand="md" fixed="bottom" className="navbar-bottom" style={{minHeight:"49px",maxHeight:"49px"}}>
           {(this.state.mode === appConstants.modes.view) &&  
             (
+              <NavbarBrand>
+                <div className='interval-header'>
+                  <div className='interval-header-content'>
+                    Element {(this.state.currentCoordIdx + 1)} / {this.state.coords.length}
+                  </div>
+                </div>
+              </NavbarBrand>
+            )
+          }
+          {(this.state.mode === appConstants.modes.view) &&  
+            (
               <Collapse isOpen={this.state.isOpen} navbar>
                 <Nav navbar>
                   <Dropdown nav isOpen={this.state.exportDropdownIsOpen} toggle={this.exportDropdownToggle}>
@@ -421,6 +449,7 @@ class App extends Component {
           updateCoords={this.updateCoords}
           toggle={this.toggleUpload}
           refresh={this.parseQueryParameters}
+          refreshHgView={this.refreshHgView}
           params={this.state.hgViewParams}
           updateParams={this.updateParams}
           />

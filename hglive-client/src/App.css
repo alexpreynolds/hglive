@@ -39,6 +39,10 @@
   color: white !important;
 }
 
+.bg-dark {
+  background-color: black !important;
+}
+
 .interval-header {
   font-size: 0.9em;
   text-align: center;
