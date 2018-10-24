@@ -6,6 +6,7 @@ import {
   
 import * as appConstants from '../Constants';
 
+// cf. https://react-bootstrap-table.github.io/react-bootstrap-table2/storybook
 // cf. https://github.com/react-bootstrap-table/react-bootstrap-table2/tree/master/docs
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import BootstrapTable from 'react-bootstrap-table-next';
