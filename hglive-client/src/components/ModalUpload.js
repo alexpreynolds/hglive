@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import Spinner from 'react-svg-spinner';
 import axios from 'axios';
 import { 
-  Button, 
+  Button,
+  ButtonGroup, 
   Modal, 
   ModalHeader, 
   ModalBody, 
@@ -25,15 +26,33 @@ class ModalUpload extends Component {
       paddingMidpoint: this.props.params.paddingMidpoint,
       build: this.props.params.build,
       hgViewconfEndpointURL: this.props.params.hgViewconfEndpointURL,
-      hgViewconfId: this.props.params.hgViewconfId
+      hgViewconfId: this.props.params.hgViewconfId,
+      coordTableIsOpen: this.props.params.coordTableIsOpen
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.toggle = this.toggle.bind(this);
+    this.onClick = this.onClick.bind(this);
   }
   
   onCoordsFnChange = (event) => this.setState({ file: event.target.files[0] });
   
   onChange = (event) => this.setState({ [event.target.name]: event.target.value });
+  
+  onClick = (event) => {
+    event.preventDefault();
+    switch (event.target.name) {
+      case "coordTableIsOpenOff":
+        this.setState({ coordTableIsOpen: false });
+        document.activeElement.blur();
+        break;
+      case "coordTableIsOpenOn":
+        this.setState({ coordTableIsOpen: true });
+        document.activeElement.blur();
+        break;
+      default:
+        break;
+    }
+  }
   
   toggle() {
     var newParams = Object.assign({}, this.props.params);
@@ -47,47 +66,47 @@ class ModalUpload extends Component {
   
   handleSubmit(event) {
     event.preventDefault();
-    var self = this;
     var formData = new FormData();
     formData.append('file', this.state.file);
     formData.append('paddingMidpoint', this.state.paddingMidpoint);
     formData.append('build', this.state.build);
     formData.append('hgViewconfEndpointURL', this.state.hgViewconfEndpointURL);
     formData.append('hgViewconfId', this.state.hgViewconfId);
+    formData.append('coordTableIsOpen', this.state.coordTableIsOpen);
     const config = {
       headers: {
         'content-type': 'multipart/form-data'
       }
     }
-    self.setState({
+    this.setState({
       submit: <Spinner />,
       formEnabled: false
-    }, function() {
+    }, () => {
       var coords = [];
       const uploadRouteURL = `http://${appConstants.host}:${appConstants.port}/upload`;
       axios.post(uploadRouteURL, formData, config)
-        .then(function(res) {
+        .then((res) => {
           var id = res.data.id;
           coords = res.data.coords;
           var destURL = `http://${appConstants.host}?id=${id}`;
           var stateObj = { id: id };
           window.history.pushState(stateObj, `hgLive - ${id}`, destURL);
         })
-        .catch(function(error) {
-          console.log("error", error);
+        .catch((err) => {
+          console.log("error", err);
           var destURL = `http://${appConstants.host}/`;
           window.location.replace(destURL);
         })
-        .finally(function() {
-          setTimeout(function() {
-            self.setState({
+        .finally(() => {
+          setTimeout(() => {
+            this.setState({
               submit: "Submit",
               formEnabled: true
-            }, function() {
+            }, () => {
               this.props.updateCoords(coords);
               this.toggle();
               this.props.refresh();
-              this.props.refreshHgView(this.state.hgViewconfId);
+              this.props.refreshHgView(this.state.hgViewconfEndpointURL, this.state.hgViewconfId);
             });
           }, 2000);
         });
@@ -131,6 +150,19 @@ class ModalUpload extends Component {
                   </Input>
                   <FormText color="muted">
                     {this.props.buildBody}
+                  </FormText>
+                </Col>
+              </FormGroup>
+              
+              <FormGroup row>
+                <Label for="coordTableIsOpen" sm={3}>Element Table</Label>
+                <Col sm={9}>
+                  <ButtonGroup>
+                    <Button name="coordTableIsOpenOn" color={(this.state.coordTableIsOpen) ? "primary" : "secondary"} onClick={this.onClick}>On</Button>
+                    <Button name="coordTableIsOpenOff" color={(!this.state.coordTableIsOpen) ? "primary" : "secondary"} onClick={this.onClick}>Off</Button>
+                  </ButtonGroup>
+                  <FormText color="muted">
+                    {this.props.coordTableIsOpenBody}
                   </FormText>
                 </Col>
               </FormGroup>

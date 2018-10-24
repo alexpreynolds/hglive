@@ -84,6 +84,7 @@ router.post('/', function(req, res) {
       coordsObj.build = req.body.build || null;
       coordsObj.hgViewconfEndpointURL = req.body.hgViewconfEndpointURL || null;
       coordsObj.hgViewconfId = req.body.hgViewconfId || null;
+      coordsObj.coordTableIsOpen = req.body.coordTableIsOpen || true;
       fs.writeFileSync(destCoordsJsonFn, JSON.stringify(coordsObj, null, 2));
       return "[" + id + "] converted BED to JSON";
     })

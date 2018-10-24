@@ -23,6 +23,16 @@
   margin-right: 8px !important;
 }
 
+.btn-group-xs > .btn, .btn-xs {
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 0.9;
+  border-radius: 0.2rem;
+}
+
 .navbar-content {
   margin-left: 0px !important;
   margin-right: 0px !important;
@@ -98,4 +108,38 @@ input[type="submit"]:focus,
 input[type="checkbox"]:focus, 
 input[type="button"]:focus {
   outline: none !important;
+}
+
+.box {
+  display: flex;
+}
+
+.left {
+  flex: 1;  /* grow */
+  border-right: 1px dotted #000000;
+  padding-top: 14px;
+  padding-left: 12px;
+  margin-right: 0px;
+  padding-right: 12px;
+  margin-bottom: 10px;
+  height: calc(100vh - 91px);
+  background-color: rgba(220, 220, 220, 1);
+}
+
+.right {
+  flex: 0 0 calc(100vw - 300px); /* do not grow, do not shrink, start at 250px */
+  height: calc(100vh - 91px);
+}
+
+.right-full{
+  height: calc(100vh - 91px);
+  width: calc(100vw); 
+}
+
+.elementTable td {
+  padding: 0px;
+}
+
+.elementTable th {
+  padding: 0px;
 }

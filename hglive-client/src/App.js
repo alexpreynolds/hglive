@@ -17,15 +17,28 @@ import {
 import { 
   MdChevronLeft, 
   MdChevronRight, 
-  MdFileUpload } from 'react-icons/md';
+  MdFileUpload,
+  MdFormatListNumbered } from 'react-icons/md';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+// higlass
+// cf. https://www.npmjs.com/package/higlass
+import 'higlass/dist/hglib.css';
+import { HiGlassComponent, ChromosomeInfo } from 'higlass';
+
+// higlass-multivec
+// cf. https://www.npmjs.com/package/higlass-multivec
+import 'higlass-multivec/dist/higlass-multivec.js';
+
+// HTML5 file saver
+// cf. https://github.com/eligrey/FileSaver.js/
+import saveAs from 'file-saver';
+
+// local
 import './App.css';
 import * as appConstants from './Constants';
 import ModalUpload from './components/ModalUpload';
-import 'higlass/dist/hglib.css';
-import { HiGlassComponent, ChromosomeInfo } from 'higlass';
-import 'higlass-multivec/dist/higlass-multivec.js';
-import saveAs from 'file-saver';
+import ElementTable from './components/ElementTable';
 
 class App extends Component {
   constructor(props) {
@@ -39,7 +52,8 @@ class App extends Component {
       hgViewParams: appConstants.hgViewDefaultParams,
       hgViewKey: 0,
       viewconf: {},
-      exportDropdownIsOpen: false
+      exportDropdownIsOpen: false,
+      elementTableKey: 0
     };
     this.updateCoords = this.updateCoords.bind(this);
     this.updateParams = this.updateParams.bind(this);
@@ -50,6 +64,7 @@ class App extends Component {
     this.mod = this.mod.bind(this);
     this.incrementCoordIdx = this.incrementCoordIdx.bind(this);
     this.decrementCoordIdx = this.decrementCoordIdx.bind(this);
+    this.setCoordIdx = this.setCoordIdx.bind(this);
     ArrowKeysReact.config({
       left: () =>  { this.decrementCoordIdx() },
       right: () => { this.incrementCoordIdx() },
@@ -64,9 +79,10 @@ class App extends Component {
     this.exportDropdownToggle = this.exportDropdownToggle.bind(this);
     this.exportDropdownItemSelect = this.exportDropdownItemSelect.bind(this);
     this.refreshHgView = this.refreshHgView.bind(this);
+    this.toggleCoordTable = this.toggleCoordTable.bind(this);
     
     // update viewconf from server endpoint
-    axios.get(this.hgViewconfDownloadURL(this.state.hgViewParams.hgViewconfId))
+    axios.get(this.hgViewconfDownloadURL(this.state.hgViewParams.hgViewconfEndpointURL, this.state.hgViewParams.hgViewconfId))
       .then((res) => {
         this.setState({
           viewconf: res.data
@@ -77,8 +93,14 @@ class App extends Component {
       });
   }
   
-  hgViewconfDownloadURL(id) {
-    return this.state.hgViewParams.hgViewconfEndpointURL + appConstants.hgViewconfEndpointURLSuffix + id;
+  toggleCoordTable() {
+    var newParams = Object.assign({}, this.state.hgViewParams);
+    newParams.coordTableIsOpen = !this.state.hgViewParams.coordTableIsOpen;
+    this.updateParams(newParams);
+  }
+  
+  hgViewconfDownloadURL(url, id) {
+    return url + appConstants.hgViewconfEndpointURLSuffix + id;
   }
   
   hgViewconfIsNotEmpty() {
@@ -107,6 +129,15 @@ class App extends Component {
     });
   }
   
+  setCoordIdx(idx) {
+    this.setState({ 
+      currentCoordIdx: this.mod((idx - 1), this.state.coords.length) 
+    }, function() {
+      this.updateHgViewPositionToCurrentCoord();
+      this.updateQueryParametersToCurrentCoord();
+    });
+  }
+  
   toggleUpload() {
     document.activeElement.blur();
     this.setState({
@@ -114,8 +145,8 @@ class App extends Component {
     });
   }
   
-  refreshHgView(id) {
-    axios.get(this.hgViewconfDownloadURL(id))
+  refreshHgView(url, id) {
+    axios.get(this.hgViewconfDownloadURL(url, id))
       .then((res) => {
         this.setState({
           hgViewKey: this.state.hgViewKey + 1,
@@ -152,21 +183,20 @@ class App extends Component {
         axios.get(coordinatesRouteURL)
           .then((res) => {
             if (res.data.hgViewconfId !== this.state.hgViewParams.hgViewconfId) {
-              this.refreshHgView(res.data.hgViewconfId);
+              this.refreshHgView(res.data.hgViewconfEndpointURL, res.data.hgViewconfId);
             }
             this.updateParams({
               paddingMidpoint: res.data.paddingMidpoint,
               build: res.data.build,
               hgViewconfEndpointURL: res.data.hgViewconfEndpointURL,
-              hgViewconfId: res.data.hgViewconfId
+              hgViewconfId: res.data.hgViewconfId,
+              coordTableIsOpen: res.data.coordTableIsOpen
             });
             this.updateCoords(res.data.coords);
-            console.log("self.state.hgViewParams.hgViewconfId",this.state.hgViewParams.hgViewconfId);
           })
           .catch((err) => {
             console.log("error", err);
             var destURL = `http://${appConstants.host}/`;
-            //this.updateCoords(null);
             window.location.replace(destURL);
           });
       });
@@ -181,7 +211,8 @@ class App extends Component {
   
   updateCoords(coords) {
     this.setState({
-      coords: coords
+      coords: coords,
+      elementTableKey: this.state.elementTableKey + 1
     }, function() {
       this.updateHgViewPositionToCurrentCoord();
     });
@@ -195,7 +226,8 @@ class App extends Component {
   
   updateHgViewPositionToCurrentCoord() {
     var coord = (this.state.coords) ? this.state.coords[this.state.currentCoordIdx] : null;
-    this.updateHgViewPosition(this.state.hgViewParams.build, coord.chr, coord.start, coord.stop, coord.chr, coord.start, coord.stop);
+    if (coord)
+      this.updateHgViewPosition(this.state.hgViewParams.build, coord.chr, coord.start, coord.stop, coord.chr, coord.start, coord.stop);
   }
   
   updateHgViewPosition(build, chrA, startA, stopA, chrB, startB, stopB) {
@@ -239,6 +271,7 @@ class App extends Component {
   componentDidUpdate() {
     console.log("componentDidUpdate()");
     this.focusNavbar();
+    this.updateHgViewPositionToCurrentCoord();
   }
   
   focusNavbar() {
@@ -303,7 +336,7 @@ class App extends Component {
     var coord = (this.state.coords) ? this.state.coords[this.state.currentCoordIdx] : null;
     return (
       <div ref="hglive" {...ArrowKeysReact.events} tabIndex="1" id="hglive-nav">
-        <Navbar color="dark" dark expand="md" className="navbar-top">
+        <Navbar color="dark" dark expand="md" className="navbar-top" style={{minHeight:"49px",maxHeight:"49px"}}>
         
           <NavbarBrand>    
             {((this.state.mode === appConstants.modes.view) && (coord) && (coord.id.length > 0)) &&
@@ -358,6 +391,12 @@ class App extends Component {
                     size={16} 
                     color="white" />
                 </Button>
+                {' '}
+                <Button size="sm" color="primary" className="ml-2" disabled={Boolean(this.state.hgViewParams && this.state.hgViewParams.coordTableIsOpen)} onClick={this.toggleCoordTable}>
+                  <MdFormatListNumbered 
+                    size={16} 
+                    color="white" />
+                </Button>
                 <Button size="sm" color="primary" className="ml-auto mr-0" disabled={(!coord)} onClick={this.incrementCoordIdx}>
                   <MdChevronRight
                     size={16} 
@@ -367,33 +406,54 @@ class App extends Component {
             )
           }
           
-          {(this.state.mode === appConstants.modes.upload) &&  
+        </Navbar>
+        <div id="hglive-content">
+          { (this.hgViewconfIsNotEmpty() && (this.state.mode === appConstants.modes.view) && (this.state.hgViewParams) && (this.state.hgViewParams.coordTableIsOpen)) &&
             (
-              <Collapse isOpen={true} navbar>
-                <Nav className="ml-auto" navbar>
-                  <NavItem>
-                    <Button 
-                      size="sm"
-                      color="primary"
-                      onClick={this.toggleUpload} >
-                      <MdFileUpload size={16} color="white" />Upload BED3+
-                    </Button>
-                  </NavItem>
-                </Nav>
-              </Collapse>
+              <div className="box">
+                <div className="left">
+                  <ElementTable 
+                    key={this.state.elementTableKey}
+                    coords={this.state.coords}
+                    currentCoordIdx={(parseInt(this.state.currentCoordIdx) + 1)}
+                    updateCurrentCoordIdx={this.setCoordIdx}
+                    toggle={this.toggleCoordTable} />
+                </div>
+                <div className="right">
+                  <HiGlassComponent
+                    key={this.state.hgViewKey}
+                    ref={(component) => this.hgView = component}
+                    options={{ bounded: true }}
+                    viewConfig={this.state.viewconf}
+                    />
+                </div>
+              </div>
             )
           }
           
-        </Navbar>
-        <div id="hglive-content">
-          { (this.hgViewconfIsNotEmpty()) &&
+          { (this.hgViewconfIsNotEmpty() && (this.state.mode === appConstants.modes.view) && (this.state.hgViewParams) && (!this.state.hgViewParams.coordTableIsOpen)) &&
             (
-              <HiGlassComponent
-                key={this.state.hgViewKey}
-                ref={(component) => this.hgView = component}
-                options={{ bounded: true }}
-                viewConfig={this.state.viewconf}
-                />
+              <div className="right-full">
+                <HiGlassComponent
+                  key={this.state.hgViewKey}
+                  ref={(component) => this.hgView = component}
+                  options={{ bounded: true }}
+                  viewConfig={this.state.viewconf}
+                  />
+              </div>
+            )
+          }
+          
+          { (this.hgViewconfIsNotEmpty() && (this.state.mode === appConstants.modes.upload)) &&
+            (
+              <div className="right-full">
+                <HiGlassComponent
+                  key={this.state.hgViewKey}
+                  ref={(component) => this.hgView = component}
+                  options={{ bounded: true }}
+                  viewConfig={this.state.viewconf}
+                  />
+              </div>
             )
           }
         </div>
@@ -403,17 +463,33 @@ class App extends Component {
               <NavbarBrand>
                 <div className='interval-header'>
                   <div className='interval-header-content'>
-                    Element {(this.state.currentCoordIdx + 1)} / {this.state.coords.length}
+                    Element {(parseInt(this.state.currentCoordIdx) + 1)} / {this.state.coords.length}
                   </div>
                 </div>
               </NavbarBrand>
             )
           }
+          
+          {(this.state.mode === appConstants.modes.upload) &&  
+            (
+                <Nav style={{marginLeft:"auto",marginRight:"auto"}} navbar>
+                  <NavItem>
+                    <Button 
+                      size="sm"
+                      color="primary"
+                      onClick={this.toggleUpload} >
+                      <MdFileUpload size={16} color="white" />Upload BED3+
+                    </Button>
+                  </NavItem>
+                </Nav>
+            )
+          }
+          
           {(this.state.mode === appConstants.modes.view) &&  
             (
               <Collapse isOpen={this.state.isOpen} navbar>
                 <Nav navbar>
-                  <Dropdown nav isOpen={this.state.exportDropdownIsOpen} toggle={this.exportDropdownToggle}>
+                  <Dropdown nav direction="up" isOpen={this.state.exportDropdownIsOpen} toggle={this.exportDropdownToggle}>
                     <DropdownToggle nav caret className="exportDropdownToggle">
                       Export
                     </DropdownToggle>
@@ -443,6 +519,7 @@ class App extends Component {
           coordsBody={"Upload a three- or more column BED file (\"BED3+\"). Any data in the fourth column will be used to title the genomic position while browsing."}
           paddingBody={"Padding around midpoint of BED element (nt). Zero padding will leave element coordinates unchanged."}
           buildBody={"Genome assembly should match the coordinate space of the input BED file."}
+          coordTableIsOpenBody={"Display table of elements alongside browser view."}
           hgViewconfEndpointURLBody={"Specify HiGlass endpoint URL for retrieving view configuration."}
           hgViewconfIdBody={"Specify default view configuration ID."}
           modal={this.state.modalUpload} 

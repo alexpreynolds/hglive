@@ -9,18 +9,19 @@ export const modes = {
 Object.freeze(modes);
 
 export const buildURLs = {
-  'hg19' : 'http://s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv',
-  'hg38' : 'https://raw.githubusercontent.com/igvteam/igv/master/genomes/sizes/hg38.chrom.sizes'
+  'hg19': 'http://s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv',
+  'hg38': 'https://raw.githubusercontent.com/igvteam/igv/master/genomes/sizes/hg38.chrom.sizes'
 }
 Object.freeze(buildURLs);
 
 export const hgViewAnimationTime = 1500;
 
 export const hgViewDefaultParams = {
-  "build" : "hg38",
-  "paddingMidpoint" : 100000,
-  "hgViewconfEndpointURL" : "http://explorer.altius.org/",
-  "hgViewconfId" : "OGE3pd95StKbn3yOkXUkCw"
+  "build": "hg38",
+  "paddingMidpoint": 100000,
+  "hgViewconfEndpointURL": "http://explorer.altius.org/",
+  "hgViewconfId": "OGE3pd95StKbn3yOkXUkCw",
+  "coordTableIsOpen": true
 }
 
 export const hgViewconfEndpointURLSuffix = "api/v1/viewconfs/?d=";
