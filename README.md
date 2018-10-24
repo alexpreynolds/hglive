@@ -3,7 +3,9 @@ HiGlass-backed dynamic BED gallery browser
 
 This tool allows "live" browsing of BED files, rendering a specific HiGlass configuration at each BED element's genomic position.
 
-The `hglive` tool is made up of a React frontend that mediates user interaction ("client"), and an Expressjs backend that handles uploading BED files ("server").
+The end user provides a BED file, and (optionally) specifies a custom HiGlass endpoint and view configuration ID.
+
+The `hglive` tool is made up of a React frontend that mediates user interaction ("client"), and an Expressjs backend that handles BED and JSON coordinate and configuration files ("server").
 
 ## Deployment
 
@@ -63,7 +65,7 @@ $ sudo pm2 start hglive-server.json
 
 ### Client
 
-The following commands generate a build distribution of the React application and initializes a process manager to serve that application from port 80.
+The following commands generate a build distribution of the React application and initializes a process manager to serve the production application from port 80.
 
 ```
 $ cd ${HOME}/git/hglive/hglive-client
@@ -72,8 +74,10 @@ $ npm run build
 ...
 $ sudo npm install -g serve
 $ sudo ln -s /home/ubuntu/node-v10.11.0-linux-x64/bin/serve /usr/bin/serve
-$ sudo pm2 start hglive-client.json
+$ sudo pm2 start hglive-client-production.json
 ```
+
+The `hglive-client-development.json` object can be loaded instead, to run a development environment that recompiles the application as code is changed.
 
 ### Persist PM2 setup
 

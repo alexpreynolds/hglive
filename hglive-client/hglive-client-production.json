@@ -1,0 +1,17 @@
+{
+  apps : [
+    {
+      name: "hglive-client",
+      script: "npx",
+      interpreter: "none",
+      watch: false,
+      cwd: "/home/ubuntu/git/hglive/hglive-client",
+      args: "serve -l 80 -s build",
+      env: {
+        "PORT": 80,
+        "NODE_ENV": "production",
+        "HOST": "ec2-18-217-14-21.us-east-2.compute.amazonaws.com"
+      }
+    }
+  ]
+}

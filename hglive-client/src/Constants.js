@@ -18,9 +18,9 @@ export const hgViewAnimationTime = 1500;
 
 export const hgViewDefaultParams = {
   "build": "hg38",
-  "paddingMidpoint": 100000,
-  "hgViewconfEndpointURL": "http://explore.altius.org/",
-  "hgViewconfId": "NzTnoXPcQuCr81s0nFa9uw",
+  "paddingMidpoint": 50000,
+  "hgViewconfEndpointURL": "http://higlass.io/",
+  "hgViewconfId": "UUSPn8uSSEuIpHZFCOBRgA",
   "coordTableIsOpen": true
 }
 
