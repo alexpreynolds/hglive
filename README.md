@@ -3,6 +3,8 @@ HiGlass-backed dynamic BED gallery browser
 
 This tool allows "live" browsing of BED files, rendering a specific HiGlass configuration at each BED element's genomic position.
 
+![ec2-18-217-14-21 us-east-2 compute amazonaws com__id df96d9b7-c6d3-407e-94ce-2039e6a17c87 idx 6](https://user-images.githubusercontent.com/33584/47467340-c25bac00-d7aa-11e8-9e86-07cd2e25da1d.png)
+
 The end user provides a BED file, and (optionally) specifies a custom HiGlass endpoint and view configuration ID.
 
 The `hglive` tool is made up of a React frontend that mediates user interaction ("client"), and an Expressjs backend that handles BED and JSON coordinate and configuration files ("server").
