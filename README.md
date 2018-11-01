@@ -9,6 +9,14 @@ The end user provides a BED file, and (optionally) specifies a custom HiGlass en
 
 The `hglive` tool is made up of a React frontend that mediates user interaction ("client"), and an Expressjs backend that handles BED and JSON coordinate and configuration files ("server").
 
+## Requirements
+
+This tool is running on an Ubuntu 16 host. It should work on any Linux or Unix-like host that can run nodejs.
+
+This tool requires a running HiGlass server instance, such as http://explore.altius.org or http://higlass.io, etc. and a unique view configuration ID that is exported from that instance. The view configuration holds collections of tracks in the desired presentation, similar to how a session ID associates to a collection of tracks in a UCSC Genome Browser instance.
+
+The current test server includes defaults for server and view configuration ID settings that are currently valid. The end user may choose to create and export a custom view configuration on a HiGlass server instance, adding those server and view ID settings when importing their BED file.
+
 ## Deployment
 
 ### Update hostname
